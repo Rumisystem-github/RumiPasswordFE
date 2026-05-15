@@ -2,9 +2,46 @@
 <HTML>
 	<HEAD>
 		<TITLE>るみパスワード</TITLE>
+		
+		<LINK REL="stylesheet" HREF="https://cdn.rumia.me/CSS/reset.css">
+		<LINK REL="stylesheet" HREF="https://cdn.rumia.me/CSS/font.css">
+		<LINK REL="stylesheet" HREF="https://cdn.rumia.me/CSS/DEFAULT.css">
+
+		<LINK REL="stylesheet" HREF="/public/style/main.css">
 	</HEAD>
 	<BODY>
-		
+		<DIV CLASS="LOADING" ID="LOADING"></DIV>
+
+		<DIV CLASS="PLATE PLATE_CENTER WELCOME_SCREEN" ID="WELCOME_SCREEN" STYLE="display: none;">
+			<H2>るみパスワードへようこそ</H2>
+			るみパスワードは暗号化されているパスワードマネージャーです。<BR>
+			金庫システムに鍵を保存し、それを使用して暗号化を行っています。<BR>
+			<A>詳しくはこちらをご確認ください</A><BR>
+			<BR>
+			<BUTTON ID="SETUP_BUTTON">初期設定を開始する</BUTTON>
+		</DIV>
+
+		<DIV CLASS="PLATE PLATE_CENTER" ID="SITE_CREATE_DIALOG">
+			<INPUT TYPE="text" ID="SITE_CREATE_DIALOG_NAME">
+			<DIV ID="SITE_CREATE_DIALOG_URL_LIST"></DIV>
+			<BUTTON ID="SITE_CREATE_DIALOG_URL_ADD">+</BUTTON>
+			<BUTTON ID="SITE_CREATE_DIALOG_OK">作成</BUTTON>
+		</DIV>
+
+		<DIV CLASS="SIDE">
+			<DIV ID="SITE_LIST"></DIV>
+		</DIV>
+
+		<DIV CLASS="CONTENTS" ID="CONTENTS">
+			<DIV CLASS="SITE_PAGE" ID="SITE_PAGE">
+				<H2 ID="SITE_PAGE_NAME"></H2>
+				<DIV ID="SITE_PAGE_HOST"></DIV>
+
+				<BUTTON ID="SITE_PAGE_ADD">+</BUTTON>
+
+				<DIV ID="SITE_PAGE_DATA_LIST"></DIV>
+			</DIV>
+		</DIV>
 	</BODY>
 	<SCRIPT TYPE="module" SRC="/src/main.ts"></SCRIPT>
 </HTML>

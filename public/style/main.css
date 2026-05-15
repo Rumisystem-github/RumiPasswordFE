@@ -1,0 +1,54 @@
+:root{
+	--SIDE_WIDTH: 200px;
+}
+
+.SIDE{
+	position: absolute;
+	top: 0px;
+	left: 0px;
+
+	width: var(--SIDE_WIDTH);
+	height: 100vh;
+
+	background-color: #FF0000;
+
+	padding: 10px;
+}
+
+.CONTENTS{
+	position: absolute;
+	top: 0px;
+	left: var(--SIDE_WIDTH);
+
+	width: calc(100vw - var(--SIDE_WIDTH));
+	height: 100vh;
+	
+	background-color: #00FF00;
+
+	padding: 10px;
+}
+
+.DATA_ITEM{
+	display: flex;
+	flex-direction: row;
+
+	background-color: transparent;
+}
+
+.DATA_ITEM:hover{
+	background-color: rgba(255, 255, 255, 0.9);
+}
+
+.DATA_ITEM > .NAME{
+	flex: 1;
+
+	max-width: 40%;
+}
+
+.DATA_ITEM > .VALUE{
+	flex: 1;
+}
+
+.DATA_ITEM > .VALUE > *{
+	width: 100%;
+}
