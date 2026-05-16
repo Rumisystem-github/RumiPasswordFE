@@ -23,3 +23,7 @@ export type DataCreateAPIResult = {
 	"STATUS": boolean,
 	"ID": string
 };
+
+export type DataEditAPIResult = {
+	"STATUS": boolean
+};

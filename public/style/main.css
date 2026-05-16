@@ -52,3 +52,10 @@
 .DATA_ITEM > .VALUE > *{
 	width: 100%;
 }
+
+.DATA_ITEM > .EDIT{
+	width: 20px;
+	height: 20px;
+
+	padding: 0px;
+}

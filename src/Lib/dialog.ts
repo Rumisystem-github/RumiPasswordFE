@@ -4,12 +4,16 @@ export type ContextMenuItem = {
 	name: string,
 	fn: null|(()=>void)
 }
+export type CustomDialogResult = {
+	id: string,
+	close: ()=>void
+}
 
 window.addEventListener("load", function(){
 	console.info("DialogSystem v1.0\nse YagiRımiṠingo / https://rumi-room.net/");
 });
 
-function show_bg(bg: boolean, fn: ()=>void): BackgroundID {
+function show_bg(bg: boolean, auto_remove: boolean, fn: ()=>void): BackgroundID {
 	let id = crypto.randomUUID();
 	let el = document.createElement("DIV") as HTMLDivElement;
 	el.dataset.id = id;
@@ -25,7 +29,7 @@ function show_bg(bg: boolean, fn: ()=>void): BackgroundID {
 
 	el.onclick = function() {
 		fn();
-		el.remove();
+		if (auto_remove) el.remove();
 	}
 
 	return id;
@@ -51,7 +55,7 @@ export async function show_dialog(text: string): Promise<void> {
 	document.body.append(dialog);
 
 	return new Promise((resolve) => {
-		let id = show_bg(true, function() {
+		let id = show_bg(true, true, function() {
 			dialog.remove();
 			resolve();
 		});
@@ -80,7 +84,7 @@ export async function show_yes_no(text: string, yes: boolean, no: boolean, cance
 	document.body.append(dialog);
 
 	return new Promise((resolve) => {
-		let id = show_bg(true, function() {
+		let id = show_bg(true, true, function() {
 			dialog.remove();
 			resolve(null);
 		});
@@ -149,7 +153,7 @@ export async function show_input(text: string): Promise<string|null> {
 	input.focus();
 
 	return new Promise((resolve) => {
-		let id = show_bg(true, function() {
+		let id = show_bg(true, true, function() {
 			dialog.remove();
 			resolve(null);
 		});
@@ -183,7 +187,7 @@ export async function show_contextmenu(x: number, y: number, list: ContextMenuIt
 	document.body.append(contextmenu);
 
 	return new Promise((resolve) => {
-		let id = show_bg(false, function() {
+		let id = show_bg(false, true, function() {
 			contextmenu.remove();
 			resolve("");
 		});
@@ -201,4 +205,25 @@ export async function show_contextmenu(x: number, y: number, list: ContextMenuIt
 			contextmenu.append(el);
 		}
 	});
+}
+
+export function show_custom_dialog(contents: HTMLDivElement): CustomDialogResult {
+	const id = crypto.randomUUID();
+
+	let dialog = document.createElement("DIV");
+	dialog.className = "DIALOG_SYSTEM_DIALOG";
+
+	dialog.append(contents);
+
+	document.body.append(dialog);
+
+	const bg_id = show_bg(true, false, function() {});
+
+	return {
+		id: id,
+		close: function() {
+			dialog.remove();
+			document.querySelector(`[data-id="${bg_id}"]`)?.remove();
+		}
+	};
 }
