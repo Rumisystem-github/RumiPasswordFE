@@ -177,15 +177,17 @@ function data_text(text: string): HTMLDivElement {
 function hide_text(text: string): HTMLDivElement {
 	let el = document.createElement("DIV") as HTMLDivElement;
 
-	el.innerText = text;
+	el.innerText = "▓▓▓▓▓▓▓▓▓▓▓▓▓";
 	el.style.filter = "blur(10px)";
 
 	el.onmouseover = function() {
 		el.style.filter = "";
+		el.innerText = text;
 	}
 
 	el.onmouseleave = function() {
 		el.style.filter = "blur(10px)";
+		el.innerText = "▓▓▓▓▓▓▓▓▓▓▓▓▓";
 	}
 
 	el.onclick = async function() {
