@@ -1,12 +1,11 @@
 import { check_vault, get_private_key, passcode_login, regist_private_key } from "./vault";
 import { check_service, get_self, get_token, login, regist_service } from "./login";
-import { site_create_dialog_init } from "./Dialog/SiteCreateDialog";
 import { page_close, refresh_site_list } from "./ui";
 import { close_loading, loading_print, loading_wait, loading_wait_stop, LoadingType, set_loading_display } from "./Lib/loading";
 import { RSPA } from "./Lib/spa";
 import type { Site } from "./Type/item";
-import { get_site_list } from "./api";
-import { show_input } from "./Lib/dialog";
+import { create_site, get_site_list } from "./api";
+import { show_custom_dialog, show_input } from "./Lib/dialog";
 import { open_site_page } from "./Page/site_page";
 
 let key_list:CryptoKey[] = [];
@@ -18,14 +17,8 @@ export let mel = {
 		parent: document.getElementById("WELCOME_SCREEN")! as HTMLDivElement,
 		setup_button: document.getElementById("SETUP_BUTTON")! as HTMLButtonElement
 	},
-	site_create_dialog: {
-		parent: document.getElementById("SITE_CREATE_DIALOG")! as HTMLDivElement,
-		name_input: document.getElementById("SITE_CREATE_DIALOG_NAME")! as HTMLInputElement,
-		url_list: document.getElementById("SITE_CREATE_DIALOG_URL_LIST")! as HTMLDivElement,
-		url_add: document.getElementById("SITE_CREATE_DIALOG_URL_ADD")! as HTMLButtonElement,
-		ok: document.getElementById("SITE_CREATE_DIALOG_OK")! as HTMLButtonElement
-	},
 	side: {
+		site_add: document.getElementById("SIDE_SITE_ADD") as HTMLButtonElement,
 		site_list: document.getElementById("SITE_LIST")! as HTMLDivElement
 	},
 	contents: {
@@ -33,7 +26,7 @@ export let mel = {
 		site: {
 			parent: document.getElementById("SITE_PAGE")! as HTMLDivElement,
 			name: document.getElementById("SITE_PAGE_NAME")! as HTMLHeadingElement,
-			host: document.getElementById("SITE_PAGE_HOST")! as HTMLDivElement,
+			host: document.getElementById("SITE_PAGE_HOST")! as HTMLAnchorElement,
 			add: document.getElementById("SITE_PAGE_ADD")! as HTMLButtonElement,
 			data_list: document.getElementById("SITE_PAGE_DATA_LIST")! as HTMLDivElement
 		}
@@ -113,15 +106,82 @@ window.addEventListener("load", async function() {
 
 		//UI初期化
 		l = loading_wait("初期化中...");
-		site_create_dialog_init();
 		await refresh_site_list();
 		loading_wait_stop(l!, true);
+
+		mel.side.site_add.onclick = function() {
+			let contents = document.createElement("DIV") as HTMLDivElement;
+
+			let name_input = document.createElement("INPUT") as HTMLInputElement;
+			name_input.placeholder = "サイト名";
+			contents.append(name_input);
+
+			let host_list_el = document.createElement("DIV") as HTMLDivElement;
+			contents.append(host_list_el);
+
+			let host_add = document.createElement("BUTTON") as HTMLButtonElement;
+			host_add.innerText = "+";
+			contents.append(host_add);
+
+			let cancel_button = document.createElement("BUTTON") as HTMLButtonElement;
+			cancel_button.innerText = "やめた";
+			contents.append(cancel_button);
+
+			let ok_button = document.createElement("BUTTON") as HTMLButtonElement;
+			ok_button.innerText = "OK";
+			contents.append(ok_button);
+
+			const dialog = show_custom_dialog(contents);
+
+			host_add.onclick = async function() {
+				const input = await show_input("URLかホスト名");
+				if (input == null) return;
+
+				let host:string = "";
+				if (input.startsWith("http://") || input.startsWith("https://")) {
+					host = new URL(input).host;
+				} else {
+					host = input;
+				}
+
+				let host_item = document.createElement("DIV") as HTMLDivElement;
+				host_item.dataset.host = host;
+				host_item.innerText = host;
+				host_list_el.append(host_item);
+			}
+
+			cancel_button.onclick = function() {
+				dialog.close();
+			}
+
+			ok_button.onclick = async function() {
+				const name = name_input.value;
+				let host_list = [];
+
+				for (const el of host_list_el.children) {
+					const item = el as HTMLElement;
+					host_list.push(item.dataset.host!);
+				}
+
+				if (name === "") return;
+				if (host_list.length === 0) return;
+
+				await create_site(name, host_list);
+				await refresh_site_list();
+
+				dialog.close();
+			}
+		}
 
 		//SPA初期化
 		spa.set_404_page(function () {
 			page_close();
 
 			console.log("404");
+		});
+
+		spa.set_route("/", false, function() {
+			page_close();
 		});
 
 		spa.set_route("/site/", true, function() {

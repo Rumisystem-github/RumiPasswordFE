@@ -14,6 +14,7 @@ export async function open_site_page() {
 
 	mel.contents.site.name.innerText = site.NAME;
 	mel.contents.site.host.innerText = site.HOST[0];
+	mel.contents.site.host.href = `http://${site.HOST[0]}/`;
 
 	await refresh();
 

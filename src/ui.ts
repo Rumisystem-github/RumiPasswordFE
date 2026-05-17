@@ -6,6 +6,8 @@ export function page_close() {
 }
 
 export async function refresh_site_list() {
+	mel.side.site_list.replaceChildren();
+
 	for (const site of site_list) {
 		mel.side.site_list.append(site_list_item(site));
 	}
