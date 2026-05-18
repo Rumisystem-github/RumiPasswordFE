@@ -30,31 +30,59 @@ export async function data_list_item(data: Data): Promise<HTMLDivElement> {
 			if (data.NAME === "__PASSWORD") {
 				value_el.append(hide_text(text));
 			} else if (data.NAME === "__TOTP") {
+				async function gen(json: any): Promise<string> {
+					const key = new Uint8Array(base64_decode(json["KEY"]));
+					const period = Number.parseInt(json["PERIOD"]);
+					const digits = Number.parseInt(json["DIGITS"]);
+					const epoch = Math.floor(Date.now() / 1000);
+					const counter = Math.floor(epoch / period);
+
+					const buffer = new ArrayBuffer(8);
+					const view = new DataView(buffer);
+					view.setUint32(0, Math.floor(counter / 0x100000000), false);
+					view.setUint32(4, counter >>> 0, false);
+
+					//HMAC-SHA1
+					const crypt_key = await crypto.subtle.importKey("raw", key, { name: "HMAC", hash:"SHA-1" }, false, ["sign"]);
+					const signature = await crypto.subtle.sign("HMAC", crypt_key, buffer);
+					const digest = new Uint8Array(signature);
+
+					const offset = digest[digest.length - 1] & 0x0F;
+					const binary = ((digest[offset] & 0x7F) << 24) | ((digest[offset + 1] & 0xFF) << 16) | ((digest[offset + 2] & 0xFF) << 8) | (digest[offset + 3] & 0xFF);
+					const totp = binary % Math.pow(10, digits);
+					const code = totp.toString().padStart(digits, "0");
+					return code;
+				}
+
 				const json = JSON.parse(text);
-				const key = new Uint8Array(base64_decode(json["KEY"]));
 				const period = Number.parseInt(json["PERIOD"]);
-				const digits = Number.parseInt(json["DIGITS"]);
-				const epoch = Math.floor(Date.now() / 1000);
-				const counter = Math.floor(epoch / period);
-				const remaining_seconds = period - (epoch % period);
+				let code_el = document.createElement("DIV") as HTMLDivElement;
+				let limit_el = document.createElement("PROGRESS") as HTMLProgressElement;
+				value_el.append(code_el);
+				value_el.append(limit_el);
 
-				console.log(remaining_seconds);
+				gen(json).then((code) => {
+					code_el.innerText = code;
+				});
 
-				const buffer = new ArrayBuffer(8);
-				const view = new DataView(buffer);
-				view.setUint32(0, Math.floor(counter / 0x100000000), false);
-				view.setUint32(4, counter >>> 0, false);
+				limit_el.value = period - (Math.floor(Date.now() / 1000) % period);
+				limit_el.max = period;
 
-				//HMAC-SHA1
-				const crypt_key = await crypto.subtle.importKey("raw", key, { name: "HMAC", hash:"SHA-1" }, false, ["sign"]);
-				const signature = await crypto.subtle.sign("HMAC", crypt_key, buffer);
-				const digest = new Uint8Array(signature);
+				const int = setInterval(async function() {
+					if (value_el.isConnected == false) {
+						clearInterval(int);
+						return;
+					}
 
-				const offset = digest[digest.length - 1] & 0x0F;
-				const binary = ((digest[offset] & 0x7F) << 24) | ((digest[offset + 1] & 0xFF) << 16) | ((digest[offset + 2] & 0xFF) << 8) | (digest[offset + 3] & 0xFF);
-				const totp = binary % Math.pow(10, digits);
-				const code = totp.toString().padStart(digits, "0");
-				value_el.append(data_text(code));
+					const epoch = Math.floor(Date.now() / 1000);
+					const remaining_second = period - (epoch % period);
+					limit_el.value = remaining_second;
+
+					if (remaining_second === period) {
+						const code = await gen(json);
+						code_el.innerText = code;
+					}
+				}, 1000);
 			} else {
 				value_el.append(data_text(text));
 			}

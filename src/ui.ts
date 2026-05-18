@@ -2,7 +2,9 @@ import { dir_list, mel, site_list } from "./main";
 import { site_list_item } from "./UIItem/site_list_item";
 
 export function page_close() {
+	//サイト
 	mel.contents.site.parent.style.display = "none";
+	mel.contents.site.data_list.replaceChildren();
 }
 
 export async function ui_refresh_site_list() {
