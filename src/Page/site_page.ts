@@ -1,6 +1,6 @@
 import { create_data, create_dir, edit_site, get_data_list } from "../api";
 import { show_contextmenu, show_custom_dialog, show_input, type ContextMenuItem } from "../Lib/dialog";
-import { dir_list, encrypt, mel, refresh_dir_list, site_list } from "../main";
+import { base64_encode, dir_list, encrypt, mel, refresh_dir_list, site_list } from "../main";
 import { data_list_item } from "../UIItem/data_list_item";
 
 let site_id:string = "";
@@ -38,6 +38,7 @@ async function refresh() {
 	if (!data_list.some((item)=>item.NAME === "__MAIL_ADDRESS")) add_item.push({ id: "MAIL_ADDRESS", name: "メールアドレス", fn: set_mailaddess });
 	if (!data_list.some((item)=>item.NAME === "__FEDIVERSE_ADDRESS")) add_item.push({ id: "FEDI_ADDRESS", name: "Fediverseアドレス", fn: set_fediverse_address });
 	if (!data_list.some((item)=>item.NAME === "__PASSWORD")) add_item.push({ id: "PASSWORD", name: "パスワード", fn: set_password });
+	if (!data_list.some((item)=>item.NAME === "__TOTP")) add_item.push({ id: "TOTP", name: "二段階革命論", fn: set_totp });
 	add_item.push({ id: "ETC", name: "その他", fn: set_etc });
 
 	mel.contents.site.add.onclick = async function() {
@@ -72,6 +73,40 @@ async function set_password() {
 	if (input == null) return;
 
 	await data_add("__PASSWORD", input);
+}
+
+async function set_totp() {
+	const input = await show_input("二段階認証のURLか、鍵を入力して");
+	if (input == null) return;
+
+	let key;
+	let algorithm;
+	let digits;
+	let period;
+
+	if (input.startsWith("otpauth://totp/")) {
+		const url = new URL(input);
+		if (url.searchParams.get("secret") == null || url.searchParams.get("algorithm") == null || url.searchParams.get("digits") == null || url.searchParams.get("period") == null) return;
+		key = url.searchParams.get("secret");
+		algorithm = url.searchParams.get("algorithm");
+		digits = Number.parseInt(url.searchParams.get("digits")!);
+		period = Number.parseInt(url.searchParams.get("period")!);
+	} else {
+		key = input;
+		algorithm = "SHA1";
+		digits = 6;
+		period = 30;
+	}
+
+	const json = JSON.stringify(
+		{
+			"KEY": base64_encode(base32_decode(key!)),
+			"ALGORITHM": algorithm,
+			"DIGITS": digits,
+			"PERIOD": period
+		}
+	);
+	await data_add("__TOTP", json);
 }
 
 async function set_etc() {
@@ -219,4 +254,29 @@ function show_edit_dialog() {
 
 		dialog.close();
 	}
+}
+
+function base32_decode(base32:string): Uint8Array {
+	const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+	const str = base32.toUpperCase().replace(/=+$/, '');
+
+	let bits = 0;
+	let value = 0;
+	let index = 0;
+	const output = new Uint8Array(Math.floor(str.length * 5 / 8));
+
+	for (const char of str) {
+		const char_index = alphabet.indexOf(char);
+		if (char_index === -1) throw new Error("変なBase32");
+
+		value = (value << 5) | char_index;
+		bits += 5;
+
+		if (bits >= 8) {
+			output[index++] = (value >>> (bits - 8)) & 0xFF;
+			bits -= 8;
+		}
+	}
+
+	return output;
 }

@@ -29,6 +29,32 @@ export async function data_list_item(data: Data): Promise<HTMLDivElement> {
 			const text = new TextDecoder().decode(raw);
 			if (data.NAME === "__PASSWORD") {
 				value_el.append(hide_text(text));
+			} else if (data.NAME === "__TOTP") {
+				const json = JSON.parse(text);
+				const key = new Uint8Array(base64_decode(json["KEY"]));
+				const period = Number.parseInt(json["PERIOD"]);
+				const digits = Number.parseInt(json["DIGITS"]);
+				const epoch = Math.floor(Date.now() / 1000);
+				const counter = Math.floor(epoch / period);
+				const remaining_seconds = period - (epoch % period);
+
+				console.log(remaining_seconds);
+
+				const buffer = new ArrayBuffer(8);
+				const view = new DataView(buffer);
+				view.setUint32(0, Math.floor(counter / 0x100000000), false);
+				view.setUint32(4, counter >>> 0, false);
+
+				//HMAC-SHA1
+				const crypt_key = await crypto.subtle.importKey("raw", key, { name: "HMAC", hash:"SHA-1" }, false, ["sign"]);
+				const signature = await crypto.subtle.sign("HMAC", crypt_key, buffer);
+				const digest = new Uint8Array(signature);
+
+				const offset = digest[digest.length - 1] & 0x0F;
+				const binary = ((digest[offset] & 0x7F) << 24) | ((digest[offset + 1] & 0xFF) << 16) | ((digest[offset + 2] & 0xFF) << 8) | (digest[offset + 3] & 0xFF);
+				const totp = binary % Math.pow(10, digits);
+				const code = totp.toString().padStart(digits, "0");
+				value_el.append(data_text(code));
 			} else {
 				value_el.append(data_text(text));
 			}
@@ -51,6 +77,11 @@ export async function data_list_item(data: Data): Promise<HTMLDivElement> {
 
 				case "__PASSWORD": {
 					name_el.innerText = "パスワード";
+					break;
+				}
+
+				case "__TOTP": {
+					name_el.innerText = "二段階認証";
 					break;
 				}
 			}
