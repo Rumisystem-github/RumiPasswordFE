@@ -170,7 +170,8 @@ window.addEventListener("load", async function() {
 				if (host_list.length === 0) return;
 
 				await create_site(name, host_list);
-				await refresh_site_list();
+				await refresh_dir_list();
+				await ui_refresh_site_list();
 
 				dialog.close();
 			}

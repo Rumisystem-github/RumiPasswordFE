@@ -1,6 +1,7 @@
 import { create_data, create_dir, edit_site, get_data_list } from "../api";
 import { show_contextmenu, show_custom_dialog, show_input, type ContextMenuItem } from "../Lib/dialog";
 import { base64_encode, dir_list, encrypt, mel, refresh_dir_list, site_list } from "../main";
+import { ui_refresh_site_list } from "../ui";
 import { data_list_item } from "../UIItem/data_list_item";
 
 let site_id:string = "";
@@ -250,6 +251,8 @@ function show_edit_dialog() {
 		if (host_list.length === 0) return;
 
 		await edit_site(site_id, name, dir_id, host_list);
+		await refresh_dir_list();
+		await ui_refresh_site_list();
 		await open_site_page();
 
 		dialog.close();
