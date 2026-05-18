@@ -1,6 +1,6 @@
-import { create_data, get_data_list } from "../api";
-import { show_contextmenu, show_input, type ContextMenuItem } from "../Lib/dialog";
-import { encrypt, mel, site_list } from "../main";
+import { create_data, create_dir, edit_site, get_data_list } from "../api";
+import { show_contextmenu, show_custom_dialog, show_input, type ContextMenuItem } from "../Lib/dialog";
+import { dir_list, encrypt, mel, refresh_dir_list, site_list } from "../main";
 import { data_list_item } from "../UIItem/data_list_item";
 
 let site_id:string = "";
@@ -15,6 +15,8 @@ export async function open_site_page() {
 	mel.contents.site.name.innerText = site.NAME;
 	mel.contents.site.host.innerText = site.HOST[0];
 	mel.contents.site.host.href = `http://${site.HOST[0]}/`;
+
+	mel.contents.site.edit.onclick = show_edit_dialog;
 
 	await refresh();
 
@@ -87,4 +89,134 @@ async function data_add(name:string, data: string) {
 	await create_data(site_id, name, encrypted.key_id, encrypted.cipher, encrypted.iv, encrypted.tag);
 
 	await refresh();
+}
+
+function show_edit_dialog() {
+	const site = site_list.find((s)=>s.ID == site_id);
+	if (site == null) return;
+
+	let contents = document.createElement("DIV") as HTMLDivElement;
+
+	//サイト名
+	let name_input = document.createElement("INPUT") as HTMLInputElement;
+	name_input.placeholder = "サイト名";
+	name_input.value = site.NAME;
+	contents.append(name_input);
+
+	//ディレクトリ
+	let dir_select = document.createElement("SELECT") as HTMLSelectElement;
+	contents.append(dir_select);
+
+	//ディレクトリ一覧
+	let no_select_dir_item = document.createElement("OPTION") as HTMLOptionElement;
+	no_select_dir_item.value = "null";
+	no_select_dir_item.innerText = "ディレクトリ無し";
+	dir_select.append(no_select_dir_item);
+	for (const dir of dir_list) {
+		let item = document.createElement("OPTION") as HTMLOptionElement;
+		item.value = dir.ID;
+		item.innerText = dir.NAME;
+		if (site.DIR === dir.ID) item.setAttribute("selected", "");
+
+		dir_select.append(item);
+	}
+
+	//ディレクトリ編集
+	let dir_edit = document.createElement("BUTTON") as HTMLButtonElement;
+	dir_edit.innerText = "編";
+	contents.append(dir_edit);
+
+	//ホスト一覧
+	let host_list_el = document.createElement("DIV") as HTMLDivElement;
+	for (const host of site.HOST) {
+		let host_item = document.createElement("DIV") as HTMLDivElement;
+		host_item.dataset.host = host;
+		host_item.innerText = host;
+		host_list_el.append(host_item);
+	}
+	contents.append(host_list_el);
+
+	//ホスト追加
+	let host_add = document.createElement("BUTTON") as HTMLButtonElement;
+	host_add.innerText = "+";
+	contents.append(host_add);
+
+	//キャンセル
+	let cancel_button = document.createElement("BUTTON") as HTMLButtonElement;
+	cancel_button.innerText = "やめた";
+	contents.append(cancel_button);
+
+	//OK
+	let ok_button = document.createElement("BUTTON") as HTMLButtonElement;
+	ok_button.innerText = "OK";
+	contents.append(ok_button);
+
+	const dialog = show_custom_dialog(contents);
+
+	//ディレクトリ編集ボタン
+	dir_edit.onclick = async function() {
+		const input = await show_input("ディレクトリ名");
+		if (input == null) return;
+		await create_dir(input);
+		await refresh_dir_list();
+
+		dir_select.replaceChildren();
+		let no_select_dir_item = document.createElement("OPTION") as HTMLOptionElement;
+		no_select_dir_item.value = "null";
+		no_select_dir_item.innerText = "ディレクトリ無し";
+		dir_select.append(no_select_dir_item);
+		for (const dir of dir_list) {
+			let item = document.createElement("OPTION") as HTMLOptionElement;
+			item.value = dir.ID;
+			item.innerText = dir.NAME;
+			dir_select.append(item);
+		}
+	}
+
+	//ホスト追加ボタン
+	host_add.onclick = async function() {
+		const input = await show_input("URLかホスト名");
+		if (input == null) return;
+
+		let host:string = "";
+		if (input.startsWith("http://") || input.startsWith("https://")) {
+			host = new URL(input).host;
+		} else {
+			host = input;
+		}
+
+		let host_item = document.createElement("DIV") as HTMLDivElement;
+		host_item.dataset.host = host;
+		host_item.innerText = host;
+		host_list_el.append(host_item);
+	}
+
+	//キャンセルボタン
+	cancel_button.onclick = function() {
+		dialog.close();
+	}
+
+	//OKボタン
+	ok_button.onclick = async function() {
+		const name = name_input.value;
+		let host_list = [];
+		let dir_id = null;
+
+		if (dir_select.value != "null") {
+			dir_id = dir_select.value;
+		}
+
+		for (const el of host_list_el.children) {
+			const item = el as HTMLElement;
+			host_list.push(item.dataset.host!);
+		}
+
+		if (name === "") return;
+		if (host_list.length === 0) return;
+
+		await edit_site(site_id, name, dir_id, host_list);
+		await open_site_page();
+
+		dialog.close();
+	}
 }

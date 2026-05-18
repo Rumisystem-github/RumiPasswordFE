@@ -1,7 +1,7 @@
 import { get_token } from "./login";
 import { base64_encode } from "./main";
-import type { DataEditAPIResult, DataGetAPIResult, SiteCreateAPIResult, SiteGetAPIResult, StandardAPIResult } from "./Type/api_type";
-import type { Data, Site } from "./Type/item";
+import type { DataEditAPIResult, DataGetAPIResult, DirCreateAPIResult, SiteCreateAPIResult, SiteGetAPIResult, StandardAPIResult } from "./Type/api_type";
+import type { Data, Dir, Site } from "./Type/item";
 
 async function get(path: string): Promise<object> {
 	let ajax = await fetch(`/api${path}`, {
@@ -73,6 +73,24 @@ export async function create_site(name: string, host_list: string[]): Promise<st
 	if (!result.STATUS) throw new Error("サイトを作れませんでした");
 
 	return result.ID;
+}
+
+export async function edit_site(site_id: string,  name: string, dir_id: string | null, host_list: string[]): Promise<void> {
+	const result = await patch("/Site?ID=" + site_id, JSON.stringify({ "NAME": name, "DIR": dir_id, "HOST": host_list })) as StandardAPIResult;
+	if (!result.STATUS) throw new Error("サイトを編集できませでした");
+}
+//------------------------------------------------------------------------------------------------------------------------
+
+export async function get_dir_list(): Promise<Dir[]> {
+	const result = await get("/Dir") as DirCreateAPIResult;
+	if (!result.STATUS) throw new Error("取得失敗");
+
+	return result.LIST;
+}
+
+export async function create_dir(name: string): Promise<void> {
+	const result = await post("/Dir", JSON.stringify({ "NAME": name })) as StandardAPIResult;
+	if (!result.STATUS) throw new Error("ﾃﾞｨﾚｸﾄﾘを作れませんでした");
 }
 
 //------------------------------------------------------------------------------------------------------------------------

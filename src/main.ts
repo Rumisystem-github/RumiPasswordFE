@@ -1,16 +1,17 @@
 import { check_vault, get_private_key, passcode_login, regist_private_key } from "./vault";
 import { check_service, get_self, get_token, login, regist_service } from "./login";
-import { page_close, refresh_site_list } from "./ui";
+import { page_close, ui_refresh_site_list } from "./ui";
 import { close_loading, loading_print, loading_wait, loading_wait_stop, LoadingType, set_loading_display } from "./Lib/loading";
 import { RSPA } from "./Lib/spa";
-import type { Site } from "./Type/item";
-import { create_site, get_site_list } from "./api";
+import type { Dir, Site } from "./Type/item";
+import { create_site, get_dir_list, get_site_list } from "./api";
 import { show_custom_dialog, show_input } from "./Lib/dialog";
 import { open_site_page } from "./Page/site_page";
 
 let key_list:CryptoKey[] = [];
 export let spa = new RSPA();
 export let site_list:Site[] = [];
+export let dir_list:Dir[] = [];
 export let mel = {
 	loading: document.getElementById("LOADING")! as HTMLDivElement,
 	welcome_screen: {
@@ -27,6 +28,7 @@ export let mel = {
 			parent: document.getElementById("SITE_PAGE")! as HTMLDivElement,
 			name: document.getElementById("SITE_PAGE_NAME")! as HTMLHeadingElement,
 			host: document.getElementById("SITE_PAGE_HOST")! as HTMLAnchorElement,
+			edit: document.getElementById("SITE_PAGE_EDIT")! as HTMLButtonElement,
 			add: document.getElementById("SITE_PAGE_ADD")! as HTMLButtonElement,
 			data_list: document.getElementById("SITE_PAGE_DATA_LIST")! as HTMLDivElement
 		}
@@ -101,12 +103,13 @@ window.addEventListener("load", async function() {
 		}
 
 		l = loading_wait("取得しています...");
-		site_list = await get_site_list();
+		await refresh_site_list();
+		await refresh_dir_list();
 		loading_wait_stop(l!, true);
 
 		//UI初期化
 		l = loading_wait("初期化中...");
-		await refresh_site_list();
+		await ui_refresh_site_list();
 		loading_wait_stop(l!, true);
 
 		mel.side.site_add.onclick = function() {
@@ -197,6 +200,14 @@ window.addEventListener("load", async function() {
 		console.error(ex);
 	}
 });
+
+export async function refresh_site_list() {
+	site_list = await get_site_list();
+}
+
+export async function refresh_dir_list() {
+	dir_list = await get_dir_list();
+}
 
 function pick_key(): number {
 	const length = key_list.length;

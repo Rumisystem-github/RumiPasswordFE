@@ -1,4 +1,4 @@
-import type { Data, Site } from "./item";
+import type { Data, Dir, Site } from "./item";
 
 export type StandardAPIResult = {
 	"STATUS": boolean
@@ -26,4 +26,9 @@ export type DataCreateAPIResult = {
 
 export type DataEditAPIResult = {
 	"STATUS": boolean
+};
+
+export type DirCreateAPIResult = {
+	"STATUS": boolean,
+	"LIST": Dir[]
 };
