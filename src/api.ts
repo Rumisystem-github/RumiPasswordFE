@@ -1,6 +1,6 @@
 import { get_token } from "./login";
 import { base64_encode } from "./main";
-import type { DataEditAPIResult, DataGetAPIResult, DirCreateAPIResult, SiteCreateAPIResult, SiteGetAPIResult, StandardAPIResult } from "./Type/api_type";
+import type { DataCreateAPIResult, DataEditAPIResult, DataGetAPIResult, DirCreateAPIResult, SiteCreateAPIResult, SiteGetAPIResult, StandardAPIResult } from "./Type/api_type";
 import type { Data, Dir, Site } from "./Type/item";
 
 async function get(path: string): Promise<object> {
