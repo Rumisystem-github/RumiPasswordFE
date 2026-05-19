@@ -3,6 +3,10 @@
 	--MARGIN: 5px;
 }
 
+.WELCOME_SCREEN{
+	z-index: 1500;
+}
+
 .SIDE{
 	position: absolute;
 	top: 0px;
