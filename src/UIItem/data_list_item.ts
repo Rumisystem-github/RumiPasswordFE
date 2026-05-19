@@ -6,6 +6,7 @@ import type { Data } from "../Type/item";
 export async function data_list_item(data: Data): Promise<HTMLDivElement> {
 	let item = document.createElement("DIV") as HTMLDivElement;
 	item.className = "DATA_ITEM";
+	item.dataset.name = data.NAME;
 
 	let name_el = document.createElement("DIV") as HTMLDivElement;
 	name_el.className = "NAME";
@@ -222,9 +223,9 @@ async function cpi(text: string) {
 }
 
 function data_text(text: string): HTMLDivElement {
-	let el = document.createElement("DIV") as HTMLDivElement;
+	let el = document.createElement("INPUT") as HTMLInputElement;
 
-	el.innerText = text;
+	el.value = text;
 
 	el.onclick = async function() {
 		await cpi(text);
@@ -234,19 +235,19 @@ function data_text(text: string): HTMLDivElement {
 }
 
 function hide_text(text: string): HTMLDivElement {
-	let el = document.createElement("DIV") as HTMLDivElement;
+	let el = document.createElement("INPUT") as HTMLInputElement;
 
-	el.innerText = "▓▓▓▓▓▓▓▓▓▓▓▓▓";
+	el.value = "▓▓▓▓▓▓▓▓▓▓▓▓▓";
 	el.style.filter = "blur(10px)";
 
 	el.onmouseover = function() {
 		el.style.filter = "";
-		el.innerText = text;
+		el.value = text;
 	}
 
 	el.onmouseleave = function() {
 		el.style.filter = "blur(10px)";
-		el.innerText = "▓▓▓▓▓▓▓▓▓▓▓▓▓";
+		el.value = "▓▓▓▓▓▓▓▓▓▓▓▓▓";
 	}
 
 	el.onclick = async function() {

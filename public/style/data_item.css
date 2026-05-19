@@ -1,0 +1,44 @@
+.DATA_ITEM{
+	display: flex;
+	flex-direction: row;
+
+	background-color: transparent;
+}
+
+.DATA_ITEM:hover{
+	background-color: rgba(255, 255, 255, 0.9);
+}
+
+.DATA_ITEM > .NAME{
+	flex: 1;
+
+	max-width: 40%;
+}
+
+.DATA_ITEM > .VALUE{
+	flex: 1;
+}
+
+.DATA_ITEM > .VALUE > input{
+	width: 100%;
+}
+
+.DATA_ITEM > .EDIT{
+	width: 20px;
+	height: 20px;
+
+	padding: 0px;
+}
+
+.DATA_ITEM[data-name="__TOTP"] > .VALUE{
+	display: flex;
+	flex-direction: column;
+}
+
+.DATA_ITEM[data-name="__TOTP"] > .VALUE > div{
+	height: 20px;
+}
+
+.DATA_ITEM[data-name="__TOTP"] > .VALUE > progress {
+	height: 3px;
+}

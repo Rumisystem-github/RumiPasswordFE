@@ -1,5 +1,6 @@
 :root{
 	--SIDE_WIDTH: 200px;
+	--MARGIN: 5px;
 }
 
 .SIDE{
@@ -7,12 +8,17 @@
 	top: 0px;
 	left: 0px;
 
-	width: var(--SIDE_WIDTH);
-	height: 100vh;
-
-	background-color: #FF0000;
+	width: calc(var(--SIDE_WIDTH) - var(--MARGIN));
+	height: calc(100vh - (var(--MARGIN) * 2));
 
 	padding: 10px;
+	margin: var(--MARGIN);
+}
+
+.SIDE > .TITLE{
+	font-size: 40px;
+	color: black;
+	text-decoration: none;
 }
 
 .CONTENTS{
@@ -20,42 +26,9 @@
 	top: 0px;
 	left: var(--SIDE_WIDTH);
 
-	width: calc(100vw - var(--SIDE_WIDTH));
-	height: 100vh;
-	
-	background-color: #00FF00;
+	width: calc(100vw - var(--SIDE_WIDTH) - (var(--MARGIN) * 2));
+	height: calc(100vh - (var(--MARGIN) * 2));
 
 	padding: 10px;
-}
-
-.DATA_ITEM{
-	display: flex;
-	flex-direction: row;
-
-	background-color: transparent;
-}
-
-.DATA_ITEM:hover{
-	background-color: rgba(255, 255, 255, 0.9);
-}
-
-.DATA_ITEM > .NAME{
-	flex: 1;
-
-	max-width: 40%;
-}
-
-.DATA_ITEM > .VALUE{
-	flex: 1;
-}
-
-.DATA_ITEM > .VALUE > *{
-	width: 100%;
-}
-
-.DATA_ITEM > .EDIT{
-	width: 20px;
-	height: 20px;
-
-	padding: 0px;
+	margin: var(--MARGIN);
 }
