@@ -171,6 +171,7 @@ window.addEventListener("load", async function() {
 
 				await create_site(name, host_list);
 				await refresh_dir_list();
+				await refresh_site_list();
 				await ui_refresh_site_list();
 
 				dialog.close();
